@@ -1,249 +1,647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>ZeroSpoil | Zero Waste Network</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <style>
-*{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f4f8f5;color:#333}
-section{padding:60px 10%}
-h1,h2,h3{color:#2e7d32}
- 
-/* NAVBAR */
-nav{
- position:fixed;top:0;width:100%;
- background:#2e7d32;color:#fff;
- display:flex;justify-content:space-between;
- padding:15px 10%;z-index:1000
-}
-nav a{color:#fff;text-decoration:none;margin-left:20px;font-weight:bold}
- 
-/* HERO */
-#hero{
- padding-top:120px;text-align:center;
- background:linear-gradient(#a5d6a7,#e8f5e9)
-}
-#hero h1{font-size:42px}
-#hero button{
- background:#2e7d32;color:#fff;
- padding:12px 25px;border:none;font-size:16px;cursor:pointer
-}
- 
-/* GRID & CARDS */
-.grid{
- display:grid;
- grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
- gap:20px
-}
-.card{
- background:#fff;padding:20px;
- border-radius:8px;
- box-shadow:0 2px 5px rgba(0,0,0,0.1)
-}
- 
-/* DASHBOARD */
-input,button{
- width:100%;padding:10px;margin-top:8px
-}
-button{background:#2e7d32;color:#fff;border:none}
-table{
- width:100%;border-collapse:collapse;margin-top:20px
-}
-th,td{
- border:1px solid #ccc;padding:10px;text-align:center
-}
-th{background:#c8e6c9}
-.warning{color:red;font-weight:bold}
- 
-/* FOOTER */
-footer{
- background:#1b5e20;color:#fff;
- text-align:center;padding:20px
-}
+  * { box-sizing: border-box; font-family: Arial, sans-serif; }
+  :root{
+    --primary:#2e7d32;
+    --primary-strong:#1b5e20;
+    --bg:#f4f8f5;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --warn:#c62828;
+    --ok:#2e7d32;
+    --soft:#c8e6c9;
+  }
+  body { margin:0; background: var(--bg); color:#333; }
+  section { padding: 60px 10%; }
+  h1,h2,h3 { color: var(--primary); margin: 0 0 12px; }
+
+  /* NAVBAR */
+  nav {
+    position: fixed; top:0; width:100%;
+    background: var(--primary); color:#fff;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 10%; z-index:1000; gap:16px;
+  }
+  nav strong { display:flex; align-items:center; gap:8px; }
+  nav a {
+    color:#fff; text-decoration:none; margin-left:20px; font-weight:bold;
+    opacity:.95;
+  }
+  nav a:hover { text-decoration:underline; opacity:1; }
+  .nav-links { display:flex; flex-wrap:wrap; }
+
+  /* HERO */
+  #hero {
+    padding-top:120px; text-align:center;
+    background: linear-gradient(#a5d6a7, #e8f5e9);
+  }
+  #hero h1 { font-size: 40px; }
+  #hero p { color:#1b4332; margin:6px 0 20px; }
+  .btn {
+    background: var(--primary); color:#fff; border:none; cursor:pointer;
+    padding:12px 20px; border-radius:8px; font-weight:600;
+  }
+  .btn:hover { background: var(--primary-strong); }
+  .btn.secondary { background:#0f5132; }
+  .btn.warn { background: var(--warn); }
+  .btn.ghost { background:transparent; color: var(--primary); border: 1px solid var(--primary); }
+  .btn.small { padding:8px 12px; font-size: 13px; }
+  .btn-row { display:flex; flex-wrap:wrap; gap:10px; }
+
+  /* GRID & CARDS */
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px
+  }
+  .card {
+    background: var(--card); padding:20px;
+    border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+  .card h3 { margin-top:0; }
+
+  /* FORM */
+  .form-grid {
+    display:grid; grid-template-columns: repeat(2, minmax(180px,1fr)); gap:12px;
+  }
+  .form-grid .full { grid-column: 1 / -1; }
+  input,select {
+    width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px;
+    background:#fff; outline:none;
+  }
+  input:focus,select:focus { border-color: var(--primary); box-shadow:0 0 0 3px #a7f3d0; }
+  label { font-size: 12px; color: #374151; }
+
+  /* DASHBOARD table */
+  .toolbar {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px;
+  }
+  .toolbar .grow { flex:1 1 220px; }
+  table {
+    width:100%; border-collapse:collapse; margin-top:16px; background:#fff; border-radius:10px; overflow:hidden;
+  }
+  th,td {
+    border-bottom:1px solid #e5e7eb; padding:10px; text-align:center; font-size:14px;
+  }
+  thead th { background: var(--soft); color:#1b5e20; position:relative; cursor:pointer; user-select:none; }
+  thead th.nosort { cursor:default; }
+  tr:hover td { background:#fafafa; }
+  .status-badge {
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-weight:600; font-size:12px;
+  }
+  .status-fresh { color:#065f46; background:#d1fae5; }
+  .status-near { color:#7f1d1d; background:#fee2e2; }
+  .warning { color: var(--warn); font-weight:bold; }
+
+  /* Small helper UI */
+  .muted { color: var(--muted); font-size: 12px; }
+  .row-actions { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:12px; }
+
+  /* Responsive table: stack on small screens */
+  @media (max-width: 820px) {
+    thead { display:none; }
+    table, tbody, tr, td { display:block; width:100%; }
+    tr { margin: 0 0 12px; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
+    td {
+      text-align:left; display:flex; justify-content:space-between; align-items:center;
+      padding:12px 14px; gap:10px;
+    }
+    td::before {
+      content: attr(data-label);
+      font-weight:700; color:#374151; min-width: 130px;
+    }
+  }
+
+  /* Footer */
+  footer {
+    background: var(--primary-strong); color:#fff;
+    text-align:center; padding:20px; margin-top:20px;
+  }
+
+  /* Modal (for editing) */
+  .modal-backdrop {
+    position:fixed; inset:0; background: rgba(0,0,0,.45);
+    display:none; align-items:center; justify-content:center; z-index: 2000;
+    padding: 16px;
+  }
+  .modal {
+    background:#fff; max-width:600px; width:100%; border-radius:12px; padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+  }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .close-x { background:transparent; border:none; font-size:22px; line-height:1; cursor:pointer; }
 </style>
 </head>
- 
+
 <body>
- 
+
 <!-- NAVBAR -->
 <nav>
- <strong>🌱 ZeroSpoil</strong>
- <div>
-  <a href="#hero">Home</a>
-  <a href="#features">Features</a>
-  <a href="#how">How</a>
-  <a href="#dashboard">Dashboard</a>
-  <a href="#contact">Contact</a>
- </div>
+  <strong>🌱 ZeroSpoil</strong>
+  <div class="nav-links">
+    <a href="#hero">Home</a>
+    <a href="#features">Features</a>
+    <a href="#how">How</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#contact">Contact</a>
+  </div>
 </nav>
- 
+
 <!-- HERO -->
 <section id="hero">
- <h1>Zero Waste. Zero Loss.</h1>
- <p>Smart freshness sharing between stores</p>
- <button onclick="goDash()">Get Started</button>
+  <h1>Zero Waste. Zero Loss.</h1>
+  <p>Smart freshness sharing between stores</p>
+  <button class="btn" onclick="goDash()">Get Started</button>
 </section>
- 
+
 <!-- FEATURES -->
 <section id="features">
- <h2>Why ZeroSpoil?</h2>
- <div class="grid">
-  <div class="card">
-   <h3>Store-Level Tracking</h3>
-   <p>Track Product using Store ID and location</p>
+  <h2>Why ZeroSpoil?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Store-Level Tracking</h3>
+      <p>Track product using Store ID and location</p>
+    </div>
+    <div class="card">
+      <h3>Smart Redistribution</h3>
+      <p>Share surplus product between stores</p>
+    </div>
+    <div class="card">
+      <h3>Zero Waste</h3>
+      <p>Prevent spoilage and losses</p>
+    </div>
   </div>
-  <div class="card">
-   <h3>Smart Redistribution</h3>
-   <p>Share surplus Product between stores</p>
-  </div>
-  <div class="card">
-   <h3>Zero Waste</h3>
-   <p>Prevent spoilage and losses</p>
-  </div>
- </div>
 </section>
- 
+
 <!-- HOW IT WORKS -->
 <section id="how">
- <h2>How It Works</h2>
- <ol>
-  <li>Stores add Product details</li>
-  <li>System monitors expiry dates</li>
-  <li>Unsold Product is detected</li>
-  <li>Product is redistributed</li>
- </ol>
+  <h2>How It Works</h2>
+  <ol>
+    <li>Stores add product details</li>
+    <li>System monitors expiry dates</li>
+    <li>Unsold product is detected</li>
+    <li>Product is redistributed</li>
+  </ol>
 </section>
- 
+
 <!-- DASHBOARD -->
 <section id="dashboard">
- <h2>Store Dashboard</h2>
- 
- <div class="card">
-  <h3>Add Product</h3>
- 
-  <input id="storeId" placeholder="Store ID">
-  <input id="storeName" placeholder="Store Name">
-  <input id="storeAddress" placeholder="Store Address">
-  <input id="Product" placeholder="Product Name">
-  <input id="qty" type="number" placeholder="Quantity (kg)">
-  <input id="expiry" type="date">
- 
-  <button onclick="addProduct()">Add Product</button>
- </div>
- 
- <table>
-  <thead>
-   <tr>
-    <th>Store ID</th>
-    <th>Store Name</th>
-    <th>Store Address</th>
-    <th>Product</th>
-    <th>Qty</th>
-    <th>Expiry</th>
-    <th>Status</th>
-    <th>Action</th>
-   </tr>
-  </thead>
-  <tbody id="table"></tbody>
- </table>
+  <h2>Store Dashboard</h2>
+
+  <div class="card">
+    <h3>Add Product</h3>
+    <div class="form-grid">
+      <div>
+        <label for="storeId">Store ID</label>
+        <input id="storeId" placeholder="e.g., ST-001" />
+      </div>
+      <div>
+        <label for="storeName">Store Name</label>
+        <input id="storeName" placeholder="e.g., Guindy Fresh" />
+      </div>
+      <div class="full">
+        <label for="storeAddress">Store Address</label>
+        <input id="storeAddress" placeholder="Address / Locality" />
+      </div>
+      <div>
+        <label for="product">Product Name</label>
+        <input id="product" placeholder="e.g., Spinach" />
+      </div>
+      <div>
+        <label for="qty">Quantity (kg)</label>
+        <input id="qty" type="number" min="0.1" step="0.1" placeholder="e.g., 12.5" />
+      </div>
+      <div>
+        <label for="expiry">Expiry Date</label>
+        <input id="expiry" type="date" />
+      </div>
+      <div>
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="">Select category</option>
+          <option>Leafy Greens</option>
+          <option>Fruits</option>
+          <option>Vegetables</option>
+          <option>Dairy</option>
+          <option>Bakery</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="full">
+        <button class="btn" onclick="addProduct()">Add Product</button>
+      </div>
+    </div>
+    <p class="muted">Tip: Items with ≤ 2 days left are flagged as <strong>Near Expiry</strong>.</p>
+  </div>
+
+  <div class="toolbar">
+    <input id="search" class="grow" placeholder="Search by product or store..." oninput="applyFilters()" />
+    <select id="statusFilter" onchange="applyFilters()">
+      <option value="">All Status</option>
+      <option value="Fresh">Fresh</option>
+      <option value="Near Expiry">Near Expiry</option>
+    </select>
+    <select id="categoryFilter" onchange="applyFilters()">
+      <option value="">All Categories</option>
+      <option>Leafy Greens</option>
+      <option>Fruits</option>
+      <option>Vegetables</option>
+      <option>Dairy</option>
+      <option>Bakery</option>
+      <option>Other</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn ghost small" onclick="exportData()">Export JSON</button>
+      <label class="btn ghost small" style="cursor:pointer;">
+        Import JSON
+        <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)" />
+      </label>
+      <button class="btn warn small" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('storeId')">Store ID</th>
+        <th onclick="sortBy('storeName')">Store Name</th>
+        <th class="nosort">Store Address</th>
+        <th onclick="sortBy('product')">Product</th>
+        <th onclick="sortBy('qty')">Qty (kg)</th>
+        <th onclick="sortBy('expiry')">Expiry</th>
+        <th onclick="sortBy('status')">Status</th>
+        <th class="nosort">Category</th>
+        <th class="nosort">Action</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <p id="emptyState" class="muted" style="display:none;margin-top:10px;">No items match the current filters.</p>
 </section>
- 
+
 <!-- CONTACT -->
 <section id="contact">
- <h2>Contact Us</h2>
- 
- <div class="grid">
-  <div class="card">
-   <h3>📍 Address</h3>
-   <p>ZeroSpoil HQ<br>Green Tech Park<br>Hyderabad, India</p>
+  <h2>Contact Us</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>📍 Address</h3>
+      <p>ZeroSpoil HQ<br>Green Tech Park<br>Hyderabad, India</p>
+    </div>
+    <div class="card">
+      <h3>📞 Phone</h3>
+      <p>+91 9087654321</p>
+    </div>
+    <div class="card">
+      <h3>📧 Email</h3>
+      <p>support@zerospoil.com</p>
+    </div>
   </div>
-  <div class="card">
-   <h3>📞 Phone</h3>
-   <p>+91 9087654321</p>
-  </div>
-  <div class="card">
-   <h3>📧 Email</h3>
-   <p>support@zerospoil.com</p>
-  </div>
- </div>
 </section>
- 
+
 <!-- FOOTER -->
 <footer>
- © 2026 ZeroSpoil | Store-to-Store Freshness Network
+  © 2026 ZeroSpoil | Store-to-Store Freshness Network
 </footer>
- 
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Item</h3>
+      <button class="close-x" onclick="closeEdit()">×</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label for="edit_storeId">Store ID</label>
+        <input id="edit_storeId" />
+      </div>
+      <div>
+        <label for="edit_storeName">Store Name</label>
+        <input id="edit_storeName" />
+      </div>
+      <div class="full">
+        <label for="edit_storeAddress">Store Address</label>
+        <input id="edit_storeAddress" />
+      </div>
+      <div>
+        <label for="edit_product">Product</label>
+        <input id="edit_product" />
+      </div>
+      <div>
+        <label for="edit_qty">Quantity (kg)</label>
+        <input id="edit_qty" type="number" min="0.1" step="0.1" />
+      </div>
+      <div>
+        <label for="edit_expiry">Expiry</label>
+        <input id="edit_expiry" type="date" />
+      </div>
+      <div>
+        <label for="edit_category">Category</label>
+        <select id="edit_category">
+          <option>Leafy Greens</option>
+          <option>Fruits</option>
+          <option>Vegetables</option>
+          <option>Dairy</option>
+          <option>Bakery</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="full">
+        <button class="btn" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-let inventory = JSON.parse(localStorage.getItem("zerospoil")) || [];
- 
-function goDash(){
- document.getElementById("dashboard")
- .scrollIntoView({behavior:"smooth"});
-}
- 
-function addProduct(){
- let item={
-  storeId:storeId.value,
-  storeName:storeName.value,
-  storeAddress:storeAddress.value,
-  Product:Product.value,
-  qty:qty.value,
-  expiry:expiry.value
- };
- 
- if(Object.values(item).includes("")){
-  alert("Please fill all fields");
-  return;
- }
- 
- inventory.push(item);
- save();
-}
- 
-function daysLeft(d){
- return Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
-}
- 
-function render(){
- table.innerHTML="";
- inventory.forEach((i,index)=>{
-  let d=daysLeft(i.expiry);
-  table.innerHTML+=`
-   <tr>
-    <td>${i.storeId}</td>
-    <td>${i.storeName}</td>
-    <td>${i.storeAddress}</td>
-    <td>${i.Product}</td>
-    <td>${i.qty}</td>
-    <td>${i.expiry}</td>
-    <td class="${d<=2?'warning':''}">
-     ${d<=2?'Near Expiry':'Fresh'}
-    </td>
-    <td>
-     <button onclick="redistribute(${index})">
-      Redistribute
-     </button>
-    </td>
-   </tr>`;
- });
-}
- 
-function redistribute(i){
- inventory.splice(i,1);
- save();
- alert("Product redistributed successfully!");
-}
- 
-function save(){
- localStorage.setItem("zerospoil",JSON.stringify(inventory));
- render();
-}
- 
-render();
+  // --- State ---
+  const STORAGE_KEY = "zerospoil";
+  let inventory = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  let sortState = { key: "", dir: 1 }; // 1 = asc, -1 = desc
+  let editIndex = null;
+
+  // --- Helpers ---
+  function goDash() {
+    document.getElementById("dashboard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+    render();
+  }
+
+  function daysLeft(dateStr) {
+    const ms = (new Date(dateStr).setHours(23,59,59,999) - new Date());
+    return Math.ceil(ms / (1000*60*60*24));
+  }
+
+  function computeStatus(dateStr) {
+    const d = daysLeft(dateStr);
+    return (d <= 2) ? "Near Expiry" : "Fresh";
+  }
+
+  function validateItem(item) {
+    const required = ["storeId","storeName","storeAddress","product","qty","expiry"];
+    for (const k of required) {
+      if (!item[k] && item[k] !== 0) return `Field "${k}" is required.`;
+    }
+    if (Number(item.qty) <= 0) return "Quantity must be greater than 0.";
+    const exp = new Date(item.expiry);
+    if (isNaN(exp.getTime())) return "Invalid expiry date.";
+    return "";
+  }
+
+  // --- Add ---
+  function addProduct() {
+    const item = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      storeId: document.getElementById("storeId").value.trim(),
+      storeName: document.getElementById("storeName").value.trim(),
+      storeAddress: document.getElementById("storeAddress").value.trim(),
+      product: document.getElementById("product").value.trim(),
+      qty: parseFloat(document.getElementById("qty").value),
+      expiry: document.getElementById("expiry").value,
+      category: document.getElementById("category").value || "Other",
+      createdAt: new Date().toISOString()
+    };
+
+    const err = validateItem(item);
+    if (err) { alert(err); return; }
+
+    inventory.push(item);
+    // Clear inputs
+    ["storeId","storeName","storeAddress","product","qty","expiry","category"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+    });
+    save();
+  }
+
+  // --- Edit ---
+  function openEdit(index) {
+    editIndex = index;
+    const i = inventory[index];
+    document.getElementById("edit_storeId").value = i.storeId;
+    document.getElementById("edit_storeName").value = i.storeName;
+    document.getElementById("edit_storeAddress").value = i.storeAddress;
+    document.getElementById("edit_product").value = i.product;
+    document.getElementById("edit_qty").value = i.qty;
+    document.getElementById("edit_expiry").value = i.expiry;
+    document.getElementById("edit_category").value = i.category || "Other";
+    document.getElementById("editModal").style.display = "flex";
+    document.getElementById("editModal").setAttribute("aria-hidden","false");
+  }
+  function closeEdit() {
+    document.getElementById("editModal").style.display = "none";
+    document.getElementById("editModal").setAttribute("aria-hidden","true");
+    editIndex = null;
+  }
+  function saveEdit() {
+    if (editIndex === null) return;
+    const updated = {
+      ...inventory[editIndex],
+      storeId: document.getElementById("edit_storeId").value.trim(),
+      storeName: document.getElementById("edit_storeName").value.trim(),
+      storeAddress: document.getElementById("edit_storeAddress").value.trim(),
+      product: document.getElementById("edit_product").value.trim(),
+      qty: parseFloat(document.getElementById("edit_qty").value),
+      expiry: document.getElementById("edit_expiry").value,
+      category: document.getElementById("edit_category").value
+    };
+    const err = validateItem(updated);
+    if (err) { alert(err); return; }
+    inventory[editIndex] = updated;
+    save();
+    closeEdit();
+  }
+
+  // --- Delete / Redistribute ---
+  function removeItem(index) {
+    const i = inventory[index];
+    const ok = confirm(`Delete "${i.product}" from ${i.storeName}? This cannot be undone.`);
+    if (!ok) return;
+    inventory.splice(index, 1);
+    save();
+  }
+
+  function redistribute(index) {
+    const i = inventory[index];
+    const ok = confirm(`Mark "${i.product}" as redistributed from ${i.storeName}? This will remove it from this store.`);
+    if (!ok) return;
+    inventory.splice(index, 1);
+    save();
+    alert("Product redistributed successfully!");
+  }
+
+  // --- Filters / Sorting ---
+  function applyFilters() {
+    render(); // render applies active filters and sort
+  }
+
+  function sortBy(key) {
+    if (sortState.key === key) {
+      sortState.dir *= -1; // toggle
+    } else {
+      sortState.key = key;
+      sortState.dir = 1;
+    }
+    render();
+  }
+
+  function getFilteredSortedData() {
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    const s = document.getElementById("statusFilter").value;
+    const c = document.getElementById("categoryFilter").value;
+
+    let data = inventory.map(item => {
+      const status = computeStatus(item.expiry);
+      return { ...item, status };
+    });
+
+    // Filter by search
+    if (q) {
+      data = data.filter(i =>
+        (i.product && i.product.toLowerCase().includes(q)) ||
+        (i.storeName && i.storeName.toLowerCase().includes(q)) ||
+        (i.storeId && i.storeId.toLowerCase().includes(q))
+      );
+    }
+    // Filter by status
+    if (s) {
+      data = data.filter(i => i.status === s);
+    }
+    // Filter by category
+    if (c) {
+      data = data.filter(i => (i.category || "Other") === c);
+    }
+
+    // Sort
+    if (sortState.key) {
+      const k = sortState.key;
+      const dir = sortState.dir;
+      data.sort((a,b) => {
+        let va = a[k], vb = b[k];
+        if (k === "qty") { va = Number(va) || 0; vb = Number(vb) || 0; }
+        if (k === "expiry") { va = new Date(va).getTime(); vb = new Date(vb).getTime(); }
+        if (typeof va === "string") va = va.toLowerCase();
+        if (typeof vb === "string") vb = vb.toLowerCase();
+        if (va < vb) return -1 * dir;
+        if (va > vb) return  1 * dir;
+        return 0;
+      });
+    }
+    return data;
+  }
+
+  // --- Export / Import / Clear ---
+  function exportData() {
+    const blob = new Blob([JSON.stringify(inventory, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `zerospoil_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(evt) {
+    const file = evt.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const arr = JSON.parse(e.target.result);
+        if (!Array.isArray(arr)) throw new Error("Invalid file structure.");
+        // Basic sanity
+        const valid = arr.every(x => x && typeof x === "object" && x.product && x.expiry);
+        if (!valid) throw new Error("Items missing required fields.");
+        inventory = arr;
+        save();
+      } catch (err) {
+        alert("Failed to import: " + err.message);
+      } finally {
+        evt.target.value = "";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function clearAll() {
+    if (!inventory.length) { alert("Nothing to clear."); return; }
+    const ok = confirm("Clear all items from local storage?");
+    if (!ok) return;
+    inventory = [];
+    save();
+  }
+
+  // --- Render ---
+  function render() {
+    const tbody = document.getElementById("tableBody");
+    const empty = document.getElementById("emptyState");
+    tbody.innerHTML = "";
+
+    const data = getFilteredSortedData();
+    empty.style.display = data.length ? "none" : "block";
+
+    for (let index = 0; index < data.length; index++) {
+      const i = data[index];
+      const d = daysLeft(i.expiry);
+      const badgeClass = i.status === "Near Expiry" ? "status-near" : "status-fresh";
+      const statusHtml = `
+        <span class="status-badge ${badgeClass}">
+          ${i.status} <span class="chip">${d}d left</span>
+        </span>`;
+
+      const tr = document.createElement("tr");
+
+      const cells = [
+        { label: "Store ID", value: i.storeId },
+        { label: "Store Name", value: i.storeName },
+        { label: "Store Address", value: i.storeAddress },
+        { label: "Product", value: i.product },
+        { label: "Qty (kg)", value: (Number(i.qty) || 0).toFixed(2) },
+        { label: "Expiry", value: i.expiry },
+        { label: "Status", value: statusHtml, html: true },
+        { label: "Category", value: i.category || "Other" },
+        { label: "Action", value: `
+            <div class="row-actions">
+              <button class="btn small" onclick="openEdit(${inventory.indexOf(i)})">Edit</button>
+              <button class="btn small" onclick="redistribute(${inventory.indexOf(i)})">Redistribute</button>
+              <button class="btn warn small" onclick="removeItem(${inventory.indexOf(i)})">Delete</button>
+            </div>
+          `, html: true }
+      ];
+
+      cells.forEach(c => {
+        const td = document.createElement("td");
+        td.setAttribute("data-label", c.label);
+        if (c.html) td.innerHTML = c.value; else td.textContent = c.value;
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Initial render
+  render();
+
+  // Keyboard: close modal on ESC
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeEdit();
+  });
+  // Close modal by clicking backdrop
+  document.getElementById("editModal").addEventListener("click", (e) => {
+    if (e.target.id === "editModal") closeEdit();
+  });
 </script>
- 
+
 </body>
 </html>
- 
+``
