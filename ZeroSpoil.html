@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ZeroSpoil | Zero Waste Network</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f4f8f5;color:#333}
+section{padding:60px 10%}
+h1,h2,h3{color:#2e7d32}
+ 
+/* NAVBAR */
+nav{
+ position:fixed;top:0;width:100%;
+ background:#2e7d32;color:#fff;
+ display:flex;justify-content:space-between;
+ padding:15px 10%;z-index:1000
+}
+nav a{color:#fff;text-decoration:none;margin-left:20px;font-weight:bold}
+ 
+/* HERO */
+#hero{
+ padding-top:120px;text-align:center;
+ background:linear-gradient(#a5d6a7,#e8f5e9)
+}
+#hero h1{font-size:42px}
+#hero button{
+ background:#2e7d32;color:#fff;
+ padding:12px 25px;border:none;font-size:16px;cursor:pointer
+}
+ 
+/* GRID & CARDS */
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+ gap:20px
+}
+.card{
+ background:#fff;padding:20px;
+ border-radius:8px;
+ box-shadow:0 2px 5px rgba(0,0,0,0.1)
+}
+ 
+/* DASHBOARD */
+input,button{
+ width:100%;padding:10px;margin-top:8px
+}
+button{background:#2e7d32;color:#fff;border:none}
+table{
+ width:100%;border-collapse:collapse;margin-top:20px
+}
+th,td{
+ border:1px solid #ccc;padding:10px;text-align:center
+}
+th{background:#c8e6c9}
+.warning{color:red;font-weight:bold}
+ 
+/* FOOTER */
+footer{
+ background:#1b5e20;color:#fff;
+ text-align:center;padding:20px
+}
+</style>
+</head>
+ 
+<body>
+ 
+<!-- NAVBAR -->
+<nav>
+ <strong>🌱 ZeroSpoil</strong>
+ <div>
+  <a href="#hero">Home</a>
+  <a href="#features">Features</a>
+  <a href="#how">How</a>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#contact">Contact</a>
+ </div>
+</nav>
+ 
+<!-- HERO -->
+<section id="hero">
+ <h1>Zero Waste. Zero Loss.</h1>
+ <p>Smart freshness sharing between stores</p>
+ <button onclick="goDash()">Get Started</button>
+</section>
+ 
+<!-- FEATURES -->
+<section id="features">
+ <h2>Why ZeroSpoil?</h2>
+ <div class="grid">
+  <div class="card">
+   <h3>Store-Level Tracking</h3>
+   <p>Track produce using Store ID and location</p>
+  </div>
+  <div class="card">
+   <h3>Smart Redistribution</h3>
+   <p>Share surplus produce between stores</p>
+  </div>
+  <div class="card">
+   <h3>Zero Waste</h3>
+   <p>Prevent spoilage and losses</p>
+  </div>
+ </div>
+</section>
+ 
+<!-- HOW IT WORKS -->
+<section id="how">
+ <h2>How It Works</h2>
+ <ol>
+  <li>Stores add produce details</li>
+  <li>System monitors expiry dates</li>
+  <li>Unsold produce is detected</li>
+  <li>Produce is redistributed</li>
+ </ol>
+</section>
+ 
+<!-- DASHBOARD -->
+<section id="dashboard">
+ <h2>Store Dashboard</h2>
+ 
+ <div class="card">
+  <h3>Add Produce</h3>
+ 
+  <input id="storeId" placeholder="Store ID">
+  <input id="storeName" placeholder="Store Name">
+  <input id="storeAddress" placeholder="Store Address">
+  <input id="produce" placeholder="Produce Name">
+  <input id="qty" type="number" placeholder="Quantity (kg)">
+  <input id="expiry" type="date">
+ 
+  <button onclick="addProduce()">Add Produce</button>
+ </div>
+ 
+ <table>
+  <thead>
+   <tr>
+    <th>Store ID</th>
+    <th>Store Name</th>
+    <th>Store Address</th>
+    <th>Produce</th>
+    <th>Qty</th>
+    <th>Expiry</th>
+    <th>Status</th>
+    <th>Action</th>
+   </tr>
+  </thead>
+  <tbody id="table"></tbody>
+ </table>
+</section>
+ 
+<!-- CONTACT -->
+<section id="contact">
+ <h2>Contact Us</h2>
+ 
+ <div class="grid">
+  <div class="card">
+   <h3>📍 Address</h3>
+   <p>ZeroSpoil HQ<br>Green Tech Park<br>Hyderabad, India</p>
+  </div>
+  <div class="card">
+   <h3>📞 Phone</h3>
+   <p>+91 9XXXXXXXXX</p>
+  </div>
+  <div class="card">
+   <h3>📧 Email</h3>
+   <p>support@zerospoil.com</p>
+  </div>
+ </div>
+</section>
+ 
+<!-- FOOTER -->
+<footer>
+ © 2026 ZeroSpoil | Store-to-Store Freshness Network
+</footer>
+ 
+<script>
+let inventory = JSON.parse(localStorage.getItem("zerospoil")) || [];
+ 
+function goDash(){
+ document.getElementById("dashboard")
+ .scrollIntoView({behavior:"smooth"});
+}
+ 
+function addProduce(){
+ let item={
+  storeId:storeId.value,
+  storeName:storeName.value,
+  storeAddress:storeAddress.value,
+  produce:produce.value,
+  qty:qty.value,
+  expiry:expiry.value
+ };
+ 
+ if(Object.values(item).includes("")){
+  alert("Please fill all fields");
+  return;
+ }
+ 
+ inventory.push(item);
+ save();
+}
+ 
+function daysLeft(d){
+ return Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
+}
+ 
+function render(){
+ table.innerHTML="";
+ inventory.forEach((i,index)=>{
+  let d=daysLeft(i.expiry);
+  table.innerHTML+=`
+   <tr>
+    <td>${i.storeId}</td>
+    <td>${i.storeName}</td>
+    <td>${i.storeAddress}</td>
+    <td>${i.produce}</td>
+    <td>${i.qty}</td>
+    <td>${i.expiry}</td>
+    <td class="${d<=2?'warning':''}">
+     ${d<=2?'Near Expiry':'Fresh'}
+    </td>
+    <td>
+     <button onclick="redistribute(${index})">
+      Redistribute
+     </button>
+    </td>
+   </tr>`;
+ });
+}
+ 
+function redistribute(i){
+ inventory.splice(i,1);
+ save();
+ alert("Produce redistributed successfully!");
+}
+ 
+function save(){
+ localStorage.setItem("zerospoil",JSON.stringify(inventory));
+ render();
+}
+ 
+render();
+</script>
+ 
+</body>
+</html>
+ 
