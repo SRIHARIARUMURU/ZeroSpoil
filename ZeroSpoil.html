@@ -92,11 +92,11 @@ footer{
  <div class="grid">
   <div class="card">
    <h3>Store-Level Tracking</h3>
-   <p>Track produce using Store ID and location</p>
+   <p>Track Product using Store ID and location</p>
   </div>
   <div class="card">
    <h3>Smart Redistribution</h3>
-   <p>Share surplus produce between stores</p>
+   <p>Share surplus Product between stores</p>
   </div>
   <div class="card">
    <h3>Zero Waste</h3>
@@ -109,10 +109,10 @@ footer{
 <section id="how">
  <h2>How It Works</h2>
  <ol>
-  <li>Stores add produce details</li>
+  <li>Stores add Product details</li>
   <li>System monitors expiry dates</li>
-  <li>Unsold produce is detected</li>
-  <li>Produce is redistributed</li>
+  <li>Unsold Product is detected</li>
+  <li>Product is redistributed</li>
  </ol>
 </section>
  
@@ -121,16 +121,16 @@ footer{
  <h2>Store Dashboard</h2>
  
  <div class="card">
-  <h3>Add Produce</h3>
+  <h3>Add Product</h3>
  
   <input id="storeId" placeholder="Store ID">
   <input id="storeName" placeholder="Store Name">
   <input id="storeAddress" placeholder="Store Address">
-  <input id="produce" placeholder="Produce Name">
+  <input id="Product" placeholder="Product Name">
   <input id="qty" type="number" placeholder="Quantity (kg)">
   <input id="expiry" type="date">
  
-  <button onclick="addProduce()">Add Produce</button>
+  <button onclick="addProduct()">Add Product</button>
  </div>
  
  <table>
@@ -139,7 +139,7 @@ footer{
     <th>Store ID</th>
     <th>Store Name</th>
     <th>Store Address</th>
-    <th>Produce</th>
+    <th>Product</th>
     <th>Qty</th>
     <th>Expiry</th>
     <th>Status</th>
@@ -161,7 +161,7 @@ footer{
   </div>
   <div class="card">
    <h3>📞 Phone</h3>
-   <p>+91 9XXXXXXXXX</p>
+   <p>+91 9087654321</p>
   </div>
   <div class="card">
    <h3>📧 Email</h3>
@@ -183,12 +183,12 @@ function goDash(){
  .scrollIntoView({behavior:"smooth"});
 }
  
-function addProduce(){
+function addProduct(){
  let item={
   storeId:storeId.value,
   storeName:storeName.value,
   storeAddress:storeAddress.value,
-  produce:produce.value,
+  Product:Product.value,
   qty:qty.value,
   expiry:expiry.value
  };
@@ -215,7 +215,7 @@ function render(){
     <td>${i.storeId}</td>
     <td>${i.storeName}</td>
     <td>${i.storeAddress}</td>
-    <td>${i.produce}</td>
+    <td>${i.Product}</td>
     <td>${i.qty}</td>
     <td>${i.expiry}</td>
     <td class="${d<=2?'warning':''}">
@@ -233,7 +233,7 @@ function render(){
 function redistribute(i){
  inventory.splice(i,1);
  save();
- alert("Produce redistributed successfully!");
+ alert("Product redistributed successfully!");
 }
  
 function save(){
