@@ -219,8 +219,8 @@
         <input id="qty" type="number" min="0.1" step="0.1" placeholder="e.g., 12.5" />
       </div>
       <div>
-        <label for="expiry">Expiry Date</label>
-        <input id="expiry" type="date" />
+        <label for="expiry">Expiry (dd/mm/yyyy)</label>
+        <input id="expiry" placeholder="dd/mm/yyyy" inputmode="numeric" />
       </div>
       <div>
         <label for="category">Category</label>
@@ -238,7 +238,7 @@
         <button class="btn" onclick="addProduct()">Add Product</button>
       </div>
     </div>
-    <p class="muted">Tip: Items with ≤ 2 days left are flagged as <strong>Near Expiry</strong>.</p>
+    <p class="muted">Tip: Enter date as <strong>dd/mm/yyyy</strong>. Items with ≤ 2 days left are flagged as <strong>Near Expiry</strong>.</p>
   </div>
 
   <div class="toolbar">
@@ -275,7 +275,7 @@
         <th class="nosort">Store Address</th>
         <th onclick="sortBy('product')">Product</th>
         <th onclick="sortBy('qty')">Qty (kg)</th>
-        <th onclick="sortBy('expiry')">Expiry</th>
+        <th onclick="sortBy('expiryISO')">Expiry</th>
         <th onclick="sortBy('status')">Status</th>
         <th class="nosort">Category</th>
         <th class="nosort">Action</th>
@@ -339,8 +339,8 @@
         <input id="edit_qty" type="number" min="0.1" step="0.1" />
       </div>
       <div>
-        <label for="edit_expiry">Expiry</label>
-        <input id="edit_expiry" type="date" />
+        <label for="edit_expiry">Expiry (dd/mm/yyyy)</label>
+        <input id="edit_expiry" placeholder="dd/mm/yyyy" inputmode="numeric" />
       </div>
       <div>
         <label for="edit_category">Category</label>
@@ -361,45 +361,99 @@
 </div>
 
 <script>
+  // --- Date helpers for dd/mm/yyyy ---
+  function parseDMYToISO(dmy) {
+    // Accepts dd/mm/yyyy, trims spaces, validates calendar correctness
+    if (!dmy) return null;
+    const m = dmy.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!m) return null;
+    let [_, d, mth, y] = m;
+    const dd = parseInt(d, 10), mm = parseInt(mth, 10), yyyy = parseInt(y, 10);
+    if (mm < 1 || mm > 12) return null;
+    if (dd < 1 || dd > 31) return null;
+    const jsDate = new Date(yyyy, mm - 1, dd);
+    // Check if date rolled over due to invalid day
+    if (jsDate.getFullYear() !== yyyy || jsDate.getMonth() !== (mm - 1) || jsDate.getDate() !== dd) return null;
+    // Store as ISO yyyy-mm-dd (no timezone shifts)
+    const iso = `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+    return iso;
+  }
+
+  function formatISOtoDMY(iso) {
+    if (!iso) return "";
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso; // fallback
+    const [_, y, mm, dd] = m;
+    return `${dd}/${mm}/${y}`;
+  }
+
+  function isoTimestamp(isoDate) {
+    // Midnight end-of-day to be conservative (so "today" shows 0d left by end of day)
+    const d = new Date(isoDate + "T23:59:59");
+    return d.getTime();
+  }
+
+  function daysLeftISO(isoDate) {
+    const end = isoTimestamp(isoDate);
+    const now = Date.now();
+    const diff = end - now;
+    return Math.ceil(diff / (1000*60*60*24));
+  }
+
   // --- State ---
   const STORAGE_KEY = "zerospoil";
-  let inventory = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  // Normalize any old data that used 'expiry' in various formats; migrate to expiryISO if needed
+  let inventory = (function(){
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return raw.map(it => {
+      if (it.expiryISO) return it;
+      // try converting legacy fields
+      let iso = null;
+      if (it.expiry && /^\d{4}-\d{2}-\d{2}$/.test(it.expiry)) {
+        iso = it.expiry; // already ISO yyyy-mm-dd
+      } else if (it.expiry && it.expiry.includes("/")) {
+        iso = parseDMYToISO(it.expiry); // might be dd/mm/yyyy
+      }
+      return { ...it, expiryISO: iso || it.expiry || "" };
+    });
+  })();
+
   let sortState = { key: "", dir: 1 }; // 1 = asc, -1 = desc
   let editIndex = null;
 
-  // --- Helpers ---
-  function goDash() {
-    document.getElementById("dashboard").scrollIntoView({ behavior: "smooth" });
-  }
+  // --- Navigation ---
+  function goDash() { document.getElementById("dashboard").scrollIntoView({ behavior: "smooth" }); }
 
+  // --- Persistence ---
   function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
     render();
   }
 
-  function daysLeft(dateStr) {
-    const ms = (new Date(dateStr).setHours(23,59,59,999) - new Date());
-    return Math.ceil(ms / (1000*60*60*24));
-  }
-
-  function computeStatus(dateStr) {
-    const d = daysLeft(dateStr);
+  // --- Status ---
+  function computeStatus(iso) {
+    const d = daysLeftISO(iso);
     return (d <= 2) ? "Near Expiry" : "Fresh";
   }
 
+  // --- Validation ---
   function validateItem(item) {
-    const required = ["storeId","storeName","storeAddress","product","qty","expiry"];
+    const required = ["storeId","storeName","storeAddress","product","qty","expiryISO"];
     for (const k of required) {
       if (!item[k] && item[k] !== 0) return `Field "${k}" is required.`;
     }
     if (Number(item.qty) <= 0) return "Quantity must be greater than 0.";
-    const exp = new Date(item.expiry);
-    if (isNaN(exp.getTime())) return "Invalid expiry date.";
+    // ensure ISO looks correct
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(item.expiryISO)) return "Invalid expiry date format.";
     return "";
   }
 
   // --- Add ---
   function addProduct() {
+    const ddmmyyyy = document.getElementById("expiry").value.trim();
+    const iso = parseDMYToISO(ddmmyyyy);
+    if (!iso) { alert("Please enter a valid date in dd/mm/yyyy (e.g., 29/01/2026)."); return; }
+
     const item = {
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       storeId: document.getElementById("storeId").value.trim(),
@@ -407,9 +461,9 @@
       storeAddress: document.getElementById("storeAddress").value.trim(),
       product: document.getElementById("product").value.trim(),
       qty: parseFloat(document.getElementById("qty").value),
-      expiry: document.getElementById("expiry").value,
-      category: document.getElementById("category").value || "Other",
-      createdAt: new Date().toISOString()
+      expiryISO: iso,                 // store ISO internally
+      createdAt: new Date().toISOString(),
+      category: document.getElementById("category").value || "Other"
     };
 
     const err = validateItem(item);
@@ -419,7 +473,9 @@
     // Clear inputs
     ["storeId","storeName","storeAddress","product","qty","expiry","category"].forEach(id => {
       const el = document.getElementById(id);
-      if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+      if (!el) return;
+      if (el.tagName === "SELECT") el.selectedIndex = 0;
+      else el.value = "";
     });
     save();
   }
@@ -433,7 +489,7 @@
     document.getElementById("edit_storeAddress").value = i.storeAddress;
     document.getElementById("edit_product").value = i.product;
     document.getElementById("edit_qty").value = i.qty;
-    document.getElementById("edit_expiry").value = i.expiry;
+    document.getElementById("edit_expiry").value = formatISOtoDMY(i.expiryISO || "");
     document.getElementById("edit_category").value = i.category || "Other";
     document.getElementById("editModal").style.display = "flex";
     document.getElementById("editModal").setAttribute("aria-hidden","false");
@@ -445,6 +501,10 @@
   }
   function saveEdit() {
     if (editIndex === null) return;
+    const dmy = document.getElementById("edit_expiry").value.trim();
+    const iso = parseDMYToISO(dmy);
+    if (!iso) { alert("Please enter a valid date in dd/mm/yyyy."); return; }
+
     const updated = {
       ...inventory[editIndex],
       storeId: document.getElementById("edit_storeId").value.trim(),
@@ -452,7 +512,7 @@
       storeAddress: document.getElementById("edit_storeAddress").value.trim(),
       product: document.getElementById("edit_product").value.trim(),
       qty: parseFloat(document.getElementById("edit_qty").value),
-      expiry: document.getElementById("edit_expiry").value,
+      expiryISO: iso,
       category: document.getElementById("edit_category").value
     };
     const err = validateItem(updated);
@@ -481,17 +541,11 @@
   }
 
   // --- Filters / Sorting ---
-  function applyFilters() {
-    render(); // render applies active filters and sort
-  }
+  function applyFilters() { render(); }
 
   function sortBy(key) {
-    if (sortState.key === key) {
-      sortState.dir *= -1; // toggle
-    } else {
-      sortState.key = key;
-      sortState.dir = 1;
-    }
+    if (sortState.key === key) sortState.dir *= -1;
+    else { sortState.key = key; sortState.dir = 1; }
     render();
   }
 
@@ -501,11 +555,11 @@
     const c = document.getElementById("categoryFilter").value;
 
     let data = inventory.map(item => {
-      const status = computeStatus(item.expiry);
+      const status = computeStatus(item.expiryISO);
       return { ...item, status };
     });
 
-    // Filter by search
+    // Search
     if (q) {
       data = data.filter(i =>
         (i.product && i.product.toLowerCase().includes(q)) ||
@@ -513,14 +567,10 @@
         (i.storeId && i.storeId.toLowerCase().includes(q))
       );
     }
-    // Filter by status
-    if (s) {
-      data = data.filter(i => i.status === s);
-    }
-    // Filter by category
-    if (c) {
-      data = data.filter(i => (i.category || "Other") === c);
-    }
+    // Status filter
+    if (s) data = data.filter(i => i.status === s);
+    // Category filter
+    if (c) data = data.filter(i => (i.category || "Other") === c);
 
     // Sort
     if (sortState.key) {
@@ -529,7 +579,7 @@
       data.sort((a,b) => {
         let va = a[k], vb = b[k];
         if (k === "qty") { va = Number(va) || 0; vb = Number(vb) || 0; }
-        if (k === "expiry") { va = new Date(va).getTime(); vb = new Date(vb).getTime(); }
+        if (k === "expiryISO") { va = isoTimestamp(a.expiryISO); vb = isoTimestamp(b.expiryISO); }
         if (typeof va === "string") va = va.toLowerCase();
         if (typeof vb === "string") vb = vb.toLowerCase();
         if (va < vb) return -1 * dir;
@@ -537,6 +587,7 @@
         return 0;
       });
     }
+
     return data;
   }
 
@@ -558,10 +609,17 @@
       try {
         const arr = JSON.parse(e.target.result);
         if (!Array.isArray(arr)) throw new Error("Invalid file structure.");
-        // Basic sanity
-        const valid = arr.every(x => x && typeof x === "object" && x.product && x.expiry);
-        if (!valid) throw new Error("Items missing required fields.");
-        inventory = arr;
+        // Normalize incoming to ensure expiryISO exists; accept old 'expiry' dd/mm/yyyy or ISO
+        const normalized = arr.map(x => {
+          let expiryISO = x.expiryISO;
+          if (!expiryISO && typeof x.expiry === "string") {
+            expiryISO = /^\d{4}-\d{2}-\d{2}$/.test(x.expiry) ? x.expiry : parseDMYToISO(x.expiry);
+          }
+          return { ...x, expiryISO: expiryISO || "" };
+        });
+        const valid = normalized.every(x => x && typeof x === "object" && x.product && x.expiryISO && /^\d{4}-\d{2}-\d{2}$/.test(x.expiryISO));
+        if (!valid) throw new Error("Items missing required fields or invalid dates.");
+        inventory = normalized;
         save();
       } catch (err) {
         alert("Failed to import: " + err.message);
@@ -591,7 +649,7 @@
 
     for (let index = 0; index < data.length; index++) {
       const i = data[index];
-      const d = daysLeft(i.expiry);
+      const d = daysLeftISO(i.expiryISO);
       const badgeClass = i.status === "Near Expiry" ? "status-near" : "status-fresh";
       const statusHtml = `
         <span class="status-badge ${badgeClass}">
@@ -606,7 +664,7 @@
         { label: "Store Address", value: i.storeAddress },
         { label: "Product", value: i.product },
         { label: "Qty (kg)", value: (Number(i.qty) || 0).toFixed(2) },
-        { label: "Expiry", value: i.expiry },
+        { label: "Expiry", value: formatISOtoDMY(i.expiryISO) },
         { label: "Status", value: statusHtml, html: true },
         { label: "Category", value: i.category || "Other" },
         { label: "Action", value: `
@@ -629,8 +687,8 @@
     }
   }
 
-  // Initial render
-  render();
+  // Initial render + persist normalization
+  save();
 
   // Keyboard: close modal on ESC
   window.addEventListener("keydown", (e) => {
@@ -644,4 +702,3 @@
 
 </body>
 </html>
-``
